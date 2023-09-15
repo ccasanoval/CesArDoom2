@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.google.ar.core.Config
 import io.github.sceneview.ar.ARScene
+import io.github.sceneview.ar.arcore.rotation
 import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.ArNode
 import io.github.sceneview.ar.node.PlacementMode
@@ -34,7 +35,7 @@ fun ArScreen() {
                     glbFileLocation = "spider.glb",
                     autoAnimate = false,
                     scaleToUnits = 0.5f,
-                    centerOrigin = Position(x = 0.0f, y = 0.0f, z = 10.0f) ,
+                    centerOrigin = Position(x = 0f, y = -2f, z = 5f) ,
                     onError = { exception ->
                         Log.e("ArScreen", "Load Model-------------------e: $exception")
                     },
@@ -45,7 +46,9 @@ fun ArScreen() {
                 nodes.add(spider.value!!)
             },
             onSessionCreate = { session ->
-                //session.depthMode = Config.DepthMode.RAW_DEPTH_ONLY
+                //https://developers.google.com/ar/develop/java/depth/developer-guide#kotlin_1
+//                if(session.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
+//                    session.depthMode = Config.DepthMode.AUTOMATIC
             },
             onFrame = { arFrame ->
                 // Retrieve ARCore frame update
@@ -54,10 +57,22 @@ fun ArScreen() {
             onTap = { hitResult ->
                 // User tapped in the AR view
                 //if(!spider.value!!.isAnchored)
-                spider.value!!.detachAnchor()
-                spider.value!!.anchor = hitResult.createAnchor()
-                spider.value!!.centerModel(Position(0f,0f,0f))
-                //spider.value!!.anchor()
+                spider.value?.let { s ->
+                    s.detachAnchor()
+                    s.anchor = hitResult.createAnchor()//spider.value!!.anchor()
+                    s.centerModel(Position(0f, 0f, 0f))
+                    s.rotation = hitResult.hitPose.rotation
+
+                    // IDLE(10-110)
+                    // WALK(120-160)
+                    // SCREAM(170-270)
+                    // JUMP WITH ROOT(280-330)
+                    // JUMP(340-390)
+                    // HEAD(400-415)
+                    // ATACK SECTION(420-500)
+                    s.playAnimation("basic", true)
+                }
+
             }
         )
     }
