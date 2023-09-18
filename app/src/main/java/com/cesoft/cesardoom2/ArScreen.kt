@@ -8,12 +8,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.sceneview.ar.ARScene
+import io.github.sceneview.ar.arcore.position
 import io.github.sceneview.ar.node.ArNode
+import io.github.sceneview.math.toVector3
 
 @Composable
 fun ArScreen() {
     val nodes = remember { mutableStateListOf<ArNode>() }
     val monster = remember { mutableStateOf<Monster?>(null) }
+    var cont = 0
     Box(modifier = Modifier.fillMaxSize()) {
         ARScene(
             modifier = Modifier.fillMaxSize(),
@@ -34,11 +37,17 @@ fun ArScreen() {
 //                    session.depthMode = Config.DepthMode.AUTOMATIC
             },
             onFrame = { arFrame ->
-if(monster.value!=null)android.util.Log.e("AA", "onFrame------------ ${monster.value}")
-                monster.value?.update(arFrame.time.intervalSeconds.toFloat())
+                if(cont++ > 50) {
+                    cont = 0
+                    monster.value?.anchor2(arFrame)
+                }
+
+                monster.value?.update(
+                    arFrame.time.intervalSeconds.toFloat(),
+                    arFrame.camera.pose.position.toVector3()
+                )
             },
             onTap = { hitResult ->
-android.util.Log.e("AA", "hitResult---${hitResult.hitPose.translation}--------- ${monster.value}")
                 monster.value?.anchor(hitResult)
             }
         )
