@@ -37,14 +37,9 @@ fun ArScreen() {
 //                    session.depthMode = Config.DepthMode.AUTOMATIC
             },
             onFrame = { arFrame ->
-                if(cont++ > 50) {
-                    cont = 0
-                    monster.value?.anchor2(arFrame)
-                }
-
                 monster.value?.update(
                     arFrame.time.intervalSeconds.toFloat(),
-                    arFrame.camera.pose.position.toVector3()
+                    arFrame.camera.pose.position,
                 )
             },
             onTap = { hitResult ->
