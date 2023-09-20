@@ -63,12 +63,21 @@ class Monster(arSceneView: ArSceneView) {
                 }
                 MonsterAnimation.Walk,
                 MonsterAnimation.Run -> {
-                    zOffset = .25f * deltaTime
-                    val position = arModelNode.modelPosition + Position(0f, 0f, zOffset)
-                    //arModelNode.centerModel(position)
-                    arModelNode.modelPosition = position
+//                    zOffset = .25f * deltaTime
+//                    val position = arModelNode.modelPosition + Position(0f, 0f, zOffset)
+//                    arModelNode.modelPosition = position
 
-                    val dist2 = distance2(camera)
+                    val m = .25f * deltaTime
+                    val dir = /*Position(0f,0f,1f)*/getLocalDirection(camera.position)
+                    val pos = Position(
+                        dir.x * m,
+                        dir.y * m,
+                        dir.z * m,
+                    )
+                    arModelNode.modelPosition += pos
+
+
+                    val dist2 = distance2(camera.position)
                     //Log.e("Mnstr", "run-----------dist2 = $dist2")
                     if(dist2 < DistAttack) {
                         changeState(MonsterAnimation.Attack)
@@ -76,7 +85,7 @@ class Monster(arSceneView: ArSceneView) {
                 }
                 MonsterAnimation.Attack -> {
                     //.. check distance again
-                    val dist2 = distance2(camera)
+                    val dist2 = distance2(camera.position)
                     //Log.e("Mnstr", "attack-----------dist2 = $dist2")
                     if(dist2 > DistFollow) {
                         changeState(MonsterAnimation.Run)
@@ -95,25 +104,17 @@ class Monster(arSceneView: ArSceneView) {
         arModelNode.playAnimation(state.animation, true)
     }
 
-    private fun direction(cameraPosition: Position): Vector3 {
-        return if(arModelNode.isAnchored) {
-            val x = arModelNode.position.x - cameraPosition.x
-            val y = 0f//arModelNode.position.y + arModelNode.anchor!!.pose!!.position.y - cameraPosition.y
-            val z = arModelNode.position.z - cameraPosition.z
-            Vector3(x, y, z).normalized()
-        } else Vector3()
-    }
-
-    private fun toCamera(): Vector3 {
-        var rotY = arModelNode.worldRotation.y
-        if(rotY < 0) rotY += 360
-        val alpha =  - toRadians(rotY.toDouble()).toFloat()
+    private fun getWorldPosition(): Vector3 {
         val mod3 = Vector3(
-            arModelNode.modelPosition.x,// + arModelNode.anchor!!.pose!!.position.x,
+            arModelNode.modelPosition.x,
             0f,
-            arModelNode.modelPosition.z,// + arModelNode.anchor!!.pose!!.position.z,
+            arModelNode.modelPosition.z,
         )
         val mod = sqrt(mod3.x*mod3.x + mod3.z*mod3.z)
+
+        var rotY = arModelNode.worldRotation.y
+        if(rotY < 0) rotY += 360
+        val alpha = -toRadians(rotY.toDouble()).toFloat()
 
         return Vector3(
             mod * sin(alpha) + arModelNode.anchor!!.pose!!.position.x,
@@ -122,10 +123,18 @@ class Monster(arSceneView: ArSceneView) {
         )
     }
 
-    private fun distance2(camera: Pose): Float {
+
+    private fun getLocalDirection(cameraPosition: Position): Vector3 {
+        val cam = getLocalCameraPosition(arModelNode.worldRotation.y, arModelNode.worldPosition, cameraPosition)
+        return Vector3.subtract(cam, arModelNode.modelPosition.toVector3())
+    }
+
+
+
+    private fun distance2(cameraPosition: Position): Float {
         //return camera.distanceTo(arModelNode.pose!!)//W t shit is this?
-        val modRot = toCamera()
-        val distance = Vector3.subtract(modRot, camera.position.toVector3())
+        val modRot = getWorldPosition()
+        val distance = Vector3.subtract(modRot, cameraPosition.toVector3())
         return distance.x*distance.x + distance.z*distance.z
     }
 
@@ -135,13 +144,10 @@ class Monster(arSceneView: ArSceneView) {
             logTime += deltaTime
             if(logTime > 1.0) {
                 logTime = 0f
-                //Log.e("Monster", "-------------------------------ROT=${camera.rotation.toS()}---POS=${camera.position.toS()}")
-                //Log.e("Monster", "MOD-------POS=${(arModelNode.anchor!!.pose.position +  arModelNode.modelPosition).toS()}  /// DIST="+"%.2f".format(distance2(camera))+" .... "+state.name)
-                //Log.e("Monster", "MOD-------POS=${arModelNode.worldPosition.toS()}")
-                Log.e("Monsrer", "--- Rot = ${arModelNode.worldRotation.y}               Dist = ${distance2(camera)}   -   ${state.animation}")
-                Log.e("Monsrer", "--- Pos = ${toCamera().toS()} ..  POS1=${arModelNode.modelPosition.toS()}   POS3=${arModelNode.worldPosition.toS()}  POS4=${arModelNode.anchor!!.pose!!.position.toS()}")
-                Log.e("Monsrer", "--- Cam = ${camera.position.toS()} ")
-                Log.e("Monsrer", "---------------------------------------------------------------------")
+                Log.e("Monsrer", "--- Rot = ${arModelNode.worldRotation.y}               Dist = ${distance2(camera.position)}   -   ${state.animation}")
+                Log.e("Monsrer", "--- Pos = ${getWorldPosition().toS()} ..  POS1=${arModelNode.modelPosition.toS()}   POS3=${arModelNode.worldPosition.toS()}  POS4=${arModelNode.anchor!!.pose!!.position.toS()}")
+                Log.e("Monsrer", "--- Cam = ${camera.position.toS()}")
+                Log.e("Monsrer", "---------------------DIR=${getLocalDirection(camera.position).toS()} // CAM LOC=${getLocalCameraPosition(arModelNode.worldRotation.y, arModelNode.worldPosition, camera.position).toS()}---------------------------------------------")
                 //position == worldPosition == anchor.pose.position (but anchor changes over time if plane relocates...)
             }
         }
@@ -159,13 +165,31 @@ class Monster(arSceneView: ArSceneView) {
         arModelNode.anchor = hitResult.createAnchor()
         Log.e("Mnstr", "anchor1--------pos=${arModelNode.worldPosition.toS()} // model=${arModelNode.modelPosition.toS()} // anchor=${arModelNode.anchor?.pose?.position?.toS()}")
         Log.e("Mnstr", "anchor2--------rot=${arModelNode.worldRotation.toS()} // model=${arModelNode.modelRotation.toS()} // anchor=${arModelNode.anchor?.pose?.rotation?.toS()}")
-        Log.e("Mnstr", "---------------------- ${hitResult.distance}----------------------")
+        Log.e("Mnstr", "---------------------- dist=${hitResult.distance}----------------------")
     }
 
     companion object {
         private const val DistAttack = 0.9f
         private const val DistFollow = 1.0f
         private const val IdleDelay = 3
+
+        fun getLocalCameraPosition(angle: Float, worldPosition : Position, cameraPosition: Position): Vector3 {
+            val mod3 = Vector3(
+                cameraPosition.x - worldPosition.x,
+                0f,
+                cameraPosition.z - worldPosition.z,
+            )
+            val mod = sqrt(mod3.x*mod3.x + mod3.z*mod3.z)
+
+            //val rotY = angle//worldRotation.y
+            val alpha = toRadians(angle.toDouble()).toFloat()
+
+            return Vector3(
+                mod * cos(alpha),
+                0f,
+                mod * sin(alpha),
+            )
+        }
     }
 }
 
