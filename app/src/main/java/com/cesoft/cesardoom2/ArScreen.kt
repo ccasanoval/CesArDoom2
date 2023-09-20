@@ -27,7 +27,6 @@ fun ArScreen() {
                 //arSceneView.lightEstimationMode = Config.LightEstimationMode.AMBIENT_INTENSITY
                 //arSceneView.planeRenderer.isShadowReceiver = true
                 //arSceneView.isDepthOcclusionEnabled = true
-
                 monster.value = Monster(arSceneView).load(nodes)
             },
             onSessionCreate = { session ->
@@ -39,7 +38,7 @@ fun ArScreen() {
             onFrame = { arFrame ->
                 monster.value?.update(
                     arFrame.time.intervalSeconds.toFloat(),
-                    arFrame.camera.pose.position,
+                    arFrame.camera.pose,
                 )
             },
             onTap = { hitResult ->
