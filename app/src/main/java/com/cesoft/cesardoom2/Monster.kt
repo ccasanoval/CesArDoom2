@@ -19,7 +19,7 @@ import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.math.Position
 import java.util.Locale
 
-//TODO: Detect a change in camera position so monster can follow it: angle and position...
+//TODO: Detect a change in camera position so monster can follow it: ANGLE
 //TODO: Sound Fx
 //TODO: Way to shoot the monster and kill it
 //TODO: Show life level bar...

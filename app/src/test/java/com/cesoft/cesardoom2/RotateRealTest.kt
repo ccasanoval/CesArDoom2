@@ -6,7 +6,7 @@ import org.junit.Test
 import kotlin.math.cos
 import kotlin.math.sin
 
-class RotateTest {
+class RotateRealTest {
     @Test
     fun test_rotate_0() {
         val angle = 0f
@@ -15,7 +15,7 @@ class RotateTest {
         //cos(Math.toRadians(90.0)) //expected:<0> but was:<6.123233995736766E-17>
         Assert.assertEquals(0.0, Util3D.clean(cos(Math.toRadians(90.0))), 0.0)
 
-        Assert.assertEquals(pos, Util3D.rotate(angle, pos))
+        Assert.assertEquals(pos, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -23,7 +23,7 @@ class RotateTest {
         val angle = 90f
         val pos = Position(1f,0f,0f)
         val res = Position(0f, 0f, -1f)
-         Assert.assertEquals(res, Util3D.rotate(angle, pos))
+         Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -31,7 +31,7 @@ class RotateTest {
         val angle = 90f
         val pos = Position(-1f,0f,0f)
         val res = Position(0f, 0f, 1f)
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -39,7 +39,7 @@ class RotateTest {
         val angle = -90f
         val pos = Position(0f,0f,1f)
         val res = Position(-1f, 0f, 0f)
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -47,7 +47,7 @@ class RotateTest {
         val angle = -90f
         val pos = Position(-1f,0f,0f)
         val res = Position(0f, 0f, -1f)
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -55,7 +55,7 @@ class RotateTest {
         val angle = 180f
         val pos = Position(0f,0f,1f)
         val res = Position(0f, 0f, -1f)
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -67,7 +67,7 @@ class RotateTest {
             0f,
             Util3D.clean(cos(Util3D.toRadians(angle))).toFloat()
         )
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 
     @Test
@@ -79,6 +79,6 @@ class RotateTest {
             0f,
             Util3D.clean(cos(Util3D.toRadians(angle))).toFloat()
         )
-        Assert.assertEquals(res, Util3D.rotate(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateRealToLocal(angle, pos))
     }
 }

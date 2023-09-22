@@ -11,7 +11,7 @@ class RotateLocalTest {
     fun test_rotate_loc_0() {
         val angle = 0f
         val pos = Position(0f,0f,1f)
-        Assert.assertEquals(pos, Util3D.rotateLocal(angle, pos))
+        Assert.assertEquals(pos, Util3D.rotateLocalToReal(angle, pos))
     }
 
     @Test
@@ -19,7 +19,7 @@ class RotateLocalTest {
         val angle = 90f
         val pos = Position(0f,0f,1f)
         val res = Position(-1f, 0f, 0f)
-         Assert.assertEquals(res, Util3D.rotateLocal(angle, pos))
+         Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
 
     @Test
@@ -27,7 +27,7 @@ class RotateLocalTest {
         val angle = -90f
         val pos = Position(0f,0f,1f)
         val res = Position(1f, 0f, 0f)
-        Assert.assertEquals(res, Util3D.rotateLocal(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
 
     @Test
@@ -35,7 +35,7 @@ class RotateLocalTest {
         val angle = 180f
         val pos = Position(0f,0f,1f)
         val res = Position(0f, 0f, -1f)
-        Assert.assertEquals(res, Util3D.rotateLocal(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
 
     @Test
@@ -43,11 +43,11 @@ class RotateLocalTest {
         val angle = 30f
         val pos = Position(0f,0f,1f)
         val res = Position(
-            -Util3D.clean(sin(Util3D.toRadians(angle))).toFloat(),
+            -(sin(Util3D.toRadians(angle))).toFloat(),
             0f,
-            Util3D.clean(cos(Util3D.toRadians(angle))).toFloat()
+            (cos(Util3D.toRadians(angle))).toFloat()
         )
-        Assert.assertEquals(res, Util3D.rotateLocal(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
 
     @Test
@@ -59,6 +59,6 @@ class RotateLocalTest {
             0f,
             Util3D.clean(cos(Util3D.toRadians(angle))).toFloat()
         )
-        Assert.assertEquals(res, Util3D.rotateLocal(angle, pos))
+        Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
 }

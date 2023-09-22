@@ -21,7 +21,7 @@ object Util3D {
         modelPosition: Position,
         worldPosition: Position
     ): Position {
-        val rotated = rotateLocal(angle = angle, modelPosition)
+        val rotated = rotateLocalToReal(angle = angle, modelPosition)
         return Position(
             worldPosition.x + rotated.x,
             worldPosition.y + rotated.y,
@@ -91,16 +91,15 @@ object Util3D {
             0f,
             cameraPosition.z - realWorldPos.z,
         ).normalized()
-        return rotate(angle = angle, position = Position(dir.x, dir.y, dir.z))
+        return rotateRealToLocal(angle = angle, position = Position(dir.x, dir.y, dir.z))
     }
 
-    // Rotate position from real world to local
-    fun rotate(angle: Float, position: Position): Position {
+    fun rotateRealToLocal(angle: Float, position: Position): Position {
         val a = toRadians(angle)
         val sin = sin(a)
         val cos = cos(a)
         val pos = Position(
-            clean(position.x * cos + position.z * sin).toFloat(),//TODO: Remove clean here, do it in the last Util3D called func
+            clean(position.x * cos + position.z * sin).toFloat(),
             position.y,
             clean(-position.x * sin + position.z * cos).toFloat(),
         )
@@ -110,7 +109,7 @@ object Util3D {
     }
 
     // Rotate position from local to real world
-    fun rotateLocal(angle: Float, position: Position): Position {
+    fun rotateLocalToReal(angle: Float, position: Position): Position {
         val a = toRadians(angle)
         val sin = sin(a)
         val cos = cos(a)

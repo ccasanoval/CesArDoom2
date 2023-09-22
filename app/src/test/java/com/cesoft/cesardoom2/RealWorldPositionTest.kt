@@ -71,8 +71,6 @@ class RealWorldPositionTest {
         val worldPosition = Position(3f, 0f, 0f)
         val angle = 90f
 
-        val rotated = Util3D.rotate(angle = angle, modelPosition)
-
         val pos = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,

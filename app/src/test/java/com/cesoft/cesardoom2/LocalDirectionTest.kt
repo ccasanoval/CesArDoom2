@@ -1,6 +1,5 @@
 package com.cesoft.cesardoom2
 
-import com.google.ar.sceneform.math.Vector3
 import io.github.sceneview.math.Position
 import org.junit.Assert
 import org.junit.Test
@@ -47,22 +46,6 @@ class LocalDirectionTest {
         val worldPosition = Position(3.0f, -1.00f, 0.00f)
         val cameraPosition = Position(-10.0f, 0.00f, 0.0f)
         val angle = 90f
-
-        val realWorldPos = Util3D.getRealWorldPosition(
-            angle = angle,
-            modelPosition = modelPosition,
-            worldPosition = worldPosition
-        )
-        System.err.println("---------------real world pos $realWorldPos")
-        val dir = Vector3(
-            cameraPosition.x - realWorldPos.x,
-            0f,
-            cameraPosition.z - realWorldPos.z,
-        ).normalized()
-        System.err.println("--------------- real world dir = $dir")
-        val a = Util3D.rotate(angle = angle, position = Position(dir.x, dir.y, dir.z))
-        System.err.println("--------------- local dir $a")
-
 
         val pos = Util3D.getLocalDirection(
             angle = angle,
@@ -114,23 +97,6 @@ class LocalDirectionTest {
         val worldPosition = Position(0.0f, 0.0f, 3.0f)
         val cameraPosition = Position(0.0f, 0.0f, 0.0f)
         val angle = 180f
-
-//
-//        val realWorldPos = Util3D.getRealWorldPosition(
-//            angle = angle,
-//            modelPosition = modelPosition,
-//            worldPosition = worldPosition
-//        )
-//        System.err.println("--------------- $realWorldPos")
-//        val dir = Vector3(
-//            cameraPosition.x - realWorldPos.x,
-//            0f,
-//            cameraPosition.z - realWorldPos.z,
-//        ).normalized()
-//        System.err.println("--------------- $dir")
-//        val a = Util3D.rotateLocal(angle = angle, position = Position(dir.x, dir.y, dir.z))
-//        System.err.println("--------------- $a")
-
 
         val pos = Util3D.getLocalDirection(
             angle = angle,
