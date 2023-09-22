@@ -126,10 +126,10 @@ class Monster(arSceneView: ArSceneView) {
 
         arModelNode.detachAnchor()
         arModelNode.anchor = hitResult.createAnchor()
-        anchorAngle = arModelNode.anchor?.pose?.rotation?.y ?: 0f
+        anchorAngle = arModelNode.worldRotation.y//arModelNode.anchor?.pose?.rotation?.y ?: 0f
         Log.e("Mnstr", "anchor1--------pos=${arModelNode.worldPosition.toS()} // model=${arModelNode.modelPosition.toS()} // anchor=${arModelNode.anchor?.pose?.position?.toS()}")
         Log.e("Mnstr", "anchor2--------rot=${arModelNode.worldRotation.toS()} // model=${arModelNode.modelRotation.toS()} // anchor=${arModelNode.anchor?.pose?.rotation?.toS()}")
-        Log.e("Mnstr", "---------------------- dist=${hitResult.distance}----------------------")
+        Log.e("Mnstr", "---------------------- dist=${hitResult.distance}-- rot=$anchorAngle --------------------")
     }
 
     private var logTime = 0f
@@ -164,7 +164,7 @@ class Monster(arSceneView: ArSceneView) {
                     worldPosition = worldPosition,
                     cameraPosition = camera.position
                 )
-                Log.e("Monsrer", "--- Rot = $angle                Dist = $distance   -   ${state.animation}")
+                Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")
                 Log.e("Monsrer", "--- Real Pos=${realWorldPosition.toS()}   Model Pos=${modelPosition.toS()}   World Pos=${worldPosition.toS()}  Anchor Pos=${arModelNode.anchor!!.pose!!.position.toS()}")
                 Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}")
                 Log.e("Monsrer", "---------------------DIR LOC=${localDirection.toS()} // CAM LOC=${localCameraPosition.toS()}---------------------------------------------")

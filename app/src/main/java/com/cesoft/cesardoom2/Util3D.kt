@@ -3,6 +3,7 @@ package com.cesoft.cesardoom2
 import com.google.ar.sceneform.math.Vector3
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.toVector3
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.sin
@@ -11,20 +12,20 @@ import kotlin.math.sqrt
 object Util3D {
     private const val DEGREES_TO_RADIANS = 0.017453292519943295
     fun toRadians(value: Float): Double {
-        val v = if(value > 360) value - 360 else if(value < -90) value + 360 else value
-        return v * DEGREES_TO_RADIANS
+        //val v = if(value > 360) value - 360 else if(value < -90) value + 360 else value
+        return value * DEGREES_TO_RADIANS
     }
 
     fun getRealWorldPosition(
         angle: Float,
         modelPosition: Position,
         worldPosition: Position
-    ): Vector3 {
-        val rotated = rotate(angle = angle, modelPosition)
-        return Vector3(
-            rotated.x + worldPosition.x,// arModelNode.anchor!!.pose!!.position.x,
-            rotated.y + worldPosition.y,
-            rotated.z + worldPosition.z,//arModelNode.anchor!!.pose!!.position.z,
+    ): Position {
+        val rotated = rotateLocal(angle = angle, modelPosition)
+        return Position(
+            worldPosition.x + rotated.x,
+            worldPosition.y + rotated.y,
+            worldPosition.z + rotated.z,
         )
     }
 
@@ -47,10 +48,10 @@ object Util3D {
         worldPosition: Position,
         cameraPosition: Position
     ): Float {
-        //return camera.distanceTo(arModelNode.pose!!)//W t shit is this?
         val modRot = getRealWorldPosition(angle, modelPosition, worldPosition)
-        val distance = Vector3.subtract(modRot, cameraPosition.toVector3())
-        return distance.x*distance.x + distance.z*distance.z
+        val x = modRot.x - cameraPosition.x
+        val z = modRot.z - cameraPosition.z
+        return x*x + z*z
     }
 
     fun getLocalCameraPosition(
@@ -93,18 +94,38 @@ object Util3D {
         return rotate(angle = angle, position = Position(dir.x, dir.y, dir.z))
     }
 
+    // Rotate position from real world to local
     fun rotate(angle: Float, position: Position): Position {
         val a = toRadians(angle)
-        val sin = clean(sin(a))
-        val cos = clean(cos(a))
-        return Position(
-            (position.x * cos + position.z * sin).toFloat(),
+        val sin = sin(a)
+        val cos = cos(a)
+        val pos = Position(
+            clean(position.x * cos + position.z * sin).toFloat(),//TODO: Remove clean here, do it in the last Util3D called func
             position.y,
-            (position.x * sin + position.z * cos).toFloat(),
+            clean(-position.x * sin + position.z * cos).toFloat(),
         )
+        if(pos.x == -0f) pos.x = 0f
+        if(pos.z == -0f) pos.z = 0f
+        return pos
+    }
+
+    // Rotate position from local to real world
+    fun rotateLocal(angle: Float, position: Position): Position {
+        val a = toRadians(angle)
+        val sin = sin(a)
+        val cos = cos(a)
+        val pos = Position(
+            clean(position.x * cos - position.z * sin).toFloat(),
+            position.y,
+            clean(position.x * sin + position.z * cos).toFloat(),
+        )
+        if(pos.x == -0f) pos.x = 0f
+        if(pos.z == -0f) pos.z = 0f
+        return pos
     }
 
     fun clean(value: Double): Double {
-        return floor(10_000*value)/10_000
+        return if(abs(value) < 0.000_001) 0.0
+        else floor(100_000*value)/100_000
     }
 }
