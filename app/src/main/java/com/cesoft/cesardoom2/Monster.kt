@@ -20,10 +20,9 @@ import io.github.sceneview.math.Rotation
 import java.util.Locale
 
 
-//TODO: Sound Fx
 //TODO: Way to shoot the monster and kill it
 //TODO: Show life level bar...
-//TODO: Depth
+//TODO: Depth & light
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
 class Monster(arSceneView: ArSceneView) {
     private val arModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT)
@@ -118,12 +117,16 @@ class Monster(arSceneView: ArSceneView) {
             changeState(MonsterAnimation.Attack)
             SoundFx.play(sound = Sound.Attack, distance2 = distance2, loop = true)
         }
+        if(SoundFx.lastTimePlayed > 2.5f) {
+            SoundFx.play(sound = Sound.Hurt, distance2 = distance2)
+        }
     }
 
     private fun doAttack(distance2: Float) {
         if(distance2 > DistFollow) {
             changeState(MonsterAnimation.Run)
-            SoundFx.play(Sound.Shhh)
+            SoundFx.stop()
+            SoundFx.play(sound = Sound.Hurt, distance2 = distance2)
         }
     }
 
@@ -136,6 +139,7 @@ class Monster(arSceneView: ArSceneView) {
     }
 
     fun anchor(hitResult: HitResult) {
+        SoundFx.stop()
         idleStart = 0f
         changeState(MonsterAnimation.Idle)
 
@@ -144,10 +148,10 @@ class Monster(arSceneView: ArSceneView) {
 
         arModelNode.detachAnchor()
         arModelNode.anchor = hitResult.createAnchor()
-        anchorAngle = arModelNode.worldRotation.y//arModelNode.anchor?.pose?.rotation?.y ?: 0f
-        Log.e("Mnstr", "anchor1--------pos=${arModelNode.worldPosition.toS()} // model=${arModelNode.modelPosition.toS()} // anchor=${arModelNode.anchor?.pose?.position?.toS()}")
-        Log.e("Mnstr", "anchor2--------rot=${arModelNode.worldRotation.toS()} // model=${arModelNode.modelRotation.toS()} // anchor=${arModelNode.anchor?.pose?.rotation?.toS()}")
-        Log.e("Mnstr", "---------------------- dist=${hitResult.distance}-- rot=$anchorAngle --------------------")
+        anchorAngle = arModelNode.worldRotation.y
+//        Log.e("Mnstr", "anchor1--------pos=${arModelNode.worldPosition.toS()} // model=${arModelNode.modelPosition.toS()} // anchor=${arModelNode.anchor?.pose?.position?.toS()}")
+//        Log.e("Mnstr", "anchor2--------rot=${arModelNode.worldRotation.toS()} // model=${arModelNode.modelRotation.toS()} // anchor=${arModelNode.anchor?.pose?.rotation?.toS()}")
+//        Log.e("Mnstr", "---------------------- dist=${hitResult.distance}-- rot=$anchorAngle --------------------")
     }
 
 //    private var logTime = 0f
@@ -195,8 +199,8 @@ class Monster(arSceneView: ArSceneView) {
 //    }
 
     companion object {
-        private const val DistAttack = 0.9f
-        private const val DistFollow = 1.0f
+        private const val DistAttack = 0.8f
+        private const val DistFollow = 1.1f
         private const val IdleDelay = 3
         private const val DeltaRun = .28f
         private const val DeltaWalk = .20f
