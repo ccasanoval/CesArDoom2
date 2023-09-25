@@ -2,9 +2,7 @@ package com.cesoft.cesardoom2
 
 import android.util.Log
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.cesoft.cesardoom2.Util3D.distance
 import com.cesoft.cesardoom2.Util3D.distance2
-import com.cesoft.cesardoom2.Util3D.getLocalCameraPosition
 import com.cesoft.cesardoom2.Util3D.getLocalDirection
 import com.cesoft.cesardoom2.Util3D.getLocalMonsterAngle
 import com.cesoft.cesardoom2.Util3D.getRealWorldPosition
@@ -20,9 +18,8 @@ import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import java.util.Locale
-import kotlin.math.atan
 
-//TODO: Detect a change in camera position so monster can follow it: ANGLE
+
 //TODO: Sound Fx
 //TODO: Way to shoot the monster and kill it
 //TODO: Show life level bar...
@@ -53,7 +50,7 @@ class Monster(arSceneView: ArSceneView) {
     }
 
     fun update(deltaTime: Float, camera: Pose) {
-        log(deltaTime, camera)
+//        log(deltaTime, camera)
         if(arModelNode.isAnchored) {
             val angle = anchorAngle
             val worldPosition = arModelNode.worldPosition
@@ -64,6 +61,11 @@ class Monster(arSceneView: ArSceneView) {
                 angle = angle,
                 modelPosition = modelPosition,
                 worldPosition = worldPosition
+            )
+
+            val distance2 = distance2(
+                realWorldPosition = realWorldPosition,
+                cameraPosition = cameraPosition
             )
 
             //Rotate monster
@@ -80,41 +82,48 @@ class Monster(arSceneView: ArSceneView) {
                     if(idleStart > IdleDelay) {
                         idleStart = 0f
                         changeState(MonsterAnimation.Walk)
+                        SoundFx.play(sound = Sound.Awake, distance2 = distance2)
                     }
                 }
-                MonsterAnimation.Walk,
-                MonsterAnimation.Run -> {
-
-                    val delta = .25f * deltaTime
+                MonsterAnimation.Walk -> {
                     val dir = getLocalDirection(
                         angle = angle,
                         realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
-                    arModelNode.modelPosition += dir * delta
-                    //arModelNode.modelPosition += Position(0f, 0f, 1f) * delta//dir * delta//TODO: TESTING
-
-                    val dist2 = distance2(
+                    val delta = DeltaWalk * deltaTime
+                    doWalk(distance2 = distance2, direction = dir, delta = delta)
+                }
+                MonsterAnimation.Run -> {
+                    val dir = getLocalDirection(
+                        angle = angle,
                         realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
-                    if(dist2 < DistAttack) {
-                        changeState(MonsterAnimation.Attack)
-                    }
+                    val delta = DeltaRun * deltaTime
+                    doWalk(distance2 = distance2, direction = dir, delta = delta)
                 }
                 MonsterAnimation.Attack -> {
-                    //.. check distance again
-                    val dist2 = distance2(
-                        realWorldPosition = realWorldPosition,
-                        cameraPosition = cameraPosition
-                    )
-                    //Log.e("Mnstr", "attack-----------dist2 = $dist2")
-                    if(dist2 > DistFollow) {
-                        changeState(MonsterAnimation.Run)
-                    }
+                    //TODO: Player health -= delta
+                    doAttack(distance2)
                 }
                 else -> {}
             }
+        }
+    }
+
+    private fun doWalk(distance2: Float, direction: Position, delta: Float) {
+        arModelNode.modelPosition += direction * delta
+        if(distance2 < DistAttack) {
+            changeState(MonsterAnimation.Attack)
+            SoundFx.play(sound = Sound.Attack, distance2 = distance2, loop = true)
+        }
+    }
+
+    private fun doAttack(distance2: Float) {
+        if(distance2 > DistFollow) {
+            changeState(MonsterAnimation.Run)
+            SoundFx.play(Sound.Shhh)
         }
     }
 
@@ -141,54 +150,56 @@ class Monster(arSceneView: ArSceneView) {
         Log.e("Mnstr", "---------------------- dist=${hitResult.distance}-- rot=$anchorAngle --------------------")
     }
 
-    private var logTime = 0f
-    private fun log(deltaTime: Float, camera: Pose) {
-        if(arModelNode.isAnchored) {
-            logTime += deltaTime
-            if(logTime > 1.0) {
-                logTime = 0f
-
-                val angle = anchorAngle
-                val worldPosition = arModelNode.worldPosition
-                val modelPosition = arModelNode.modelPosition
-                val localCameraPosition = getLocalCameraPosition(
-                    angle = angle,
-                    worldPosition = worldPosition,
-                    cameraPosition = camera.position
-                )
-                val realWorldPosition = getRealWorldPosition(
-                    angle = angle,
-                    modelPosition = modelPosition,
-                    worldPosition = worldPosition
-                )
-                val distance = distance(
-                    realWorldPosition = realWorldPosition,
-                    cameraPosition = camera.position
-                )
-                val localDirection = getLocalDirection(
-                    angle = angle,
-                    realWorldPosition = realWorldPosition,
-                    cameraPosition = camera.position
-                )
-                val localAngle = getLocalMonsterAngle(
-                    angle = angle,
-                    realWorldPosition = realWorldPosition,
-                    cameraPosition = camera.position
-                )
-                Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")
-                Log.e("Monsrer", "--- Real Pos=${realWorldPosition.toS()}   Model Pos=${modelPosition.toS()}   World Pos=${worldPosition.toS()}  Anchor Pos=${arModelNode.anchor!!.pose!!.position.toS()}")
-                Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}")
-                Log.e("Monsrer", "---------------------DIR LOC=${localDirection.toS()} // CAM LOC=${localCameraPosition.toS()}---------------------------------------------")
-                Log.e("Monster", "--------------- monster angle = $localAngle")
-                //position == worldPosition == anchor.pose.position (but anchor changes over time if plane relocates...)
-            }
-        }
-    }
+//    private var logTime = 0f
+//    private fun log(deltaTime: Float, camera: Pose) {
+//        if(arModelNode.isAnchored) {
+//            logTime += deltaTime
+//            if(logTime > 1.0) {
+//                logTime = 0f
+//
+//                val angle = anchorAngle
+//                val worldPosition = arModelNode.worldPosition
+//                val modelPosition = arModelNode.modelPosition
+//                val localCameraPosition = getLocalCameraPosition(
+//                    angle = angle,
+//                    worldPosition = worldPosition,
+//                    cameraPosition = camera.position
+//                )
+//                val realWorldPosition = getRealWorldPosition(
+//                    angle = angle,
+//                    modelPosition = modelPosition,
+//                    worldPosition = worldPosition
+//                )
+//                val distance = distance(
+//                    realWorldPosition = realWorldPosition,
+//                    cameraPosition = camera.position
+//                )
+//                val localDirection = getLocalDirection(
+//                    angle = angle,
+//                    realWorldPosition = realWorldPosition,
+//                    cameraPosition = camera.position
+//                )
+//                val localAngle = getLocalMonsterAngle(
+//                    angle = angle,
+//                    realWorldPosition = realWorldPosition,
+//                    cameraPosition = camera.position
+//                )
+//                Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")
+//                Log.e("Monsrer", "--- Real Pos=${realWorldPosition.toS()}   Model Pos=${modelPosition.toS()}   World Pos=${worldPosition.toS()}  Anchor Pos=${arModelNode.anchor!!.pose!!.position.toS()}")
+//                Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}")
+//                Log.e("Monsrer", "---------------------DIR LOC=${localDirection.toS()} // CAM LOC=${localCameraPosition.toS()}---------------------------------------------")
+//                Log.e("Monster", "--------------- monster angle = $localAngle")
+//                //position == worldPosition == anchor.pose.position (but anchor changes over time if plane relocates...)
+//            }
+//        }
+//    }
 
     companion object {
         private const val DistAttack = 0.9f
         private const val DistFollow = 1.0f
         private const val IdleDelay = 3
+        private const val DeltaRun = .28f
+        private const val DeltaWalk = .20f
     }
 }
 

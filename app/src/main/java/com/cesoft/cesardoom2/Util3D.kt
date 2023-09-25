@@ -64,27 +64,13 @@ object Util3D {
         worldPosition: Position,
         cameraPosition: Position
     ): Position {
-//        val mod3 = Vector3(
-//            cameraPosition.x - worldPosition.x,
-//            0f,
-//            cameraPosition.z - worldPosition.z,
-//        )
-//        val mod = sqrt(mod3.x*mod3.x + mod3.z*mod3.z.toDouble())
-//        val alpha = Math.toRadians(angle.toDouble())
-//
-//        return Vector3(
-//            (mod * sin(alpha)).toFloat(),
-//            0f,
-//            (mod * cos(alpha)).toFloat(),
-//        )
         val dir = Position(
             cameraPosition.x - worldPosition.x,
             0f,
             cameraPosition.z - worldPosition.z
         )
         return rotateRealToLocal(angle, dir)
-
-    }//TODO !!!!!!
+    }
 
     fun getLocalDirection(
         angle: Float,

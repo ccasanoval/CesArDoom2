@@ -1,22 +1,31 @@
 package com.cesoft.cesardoom2
 
+import android.media.SoundPool
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import io.github.sceneview.ar.ARScene
-import io.github.sceneview.ar.arcore.position
 import io.github.sceneview.ar.node.ArNode
-import io.github.sceneview.math.toVector3
 
 @Composable
 fun ArScreen() {
     val nodes = remember { mutableStateListOf<ArNode>() }
     val monster = remember { mutableStateOf<Monster?>(null) }
-    var cont = 0
+
+    val context = LocalContext.current
+    DisposableEffect(true) {
+        SoundFx.init(context)
+        onDispose {
+            SoundFx.release()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         ARScene(
             modifier = Modifier.fillMaxSize(),
