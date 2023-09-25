@@ -1,6 +1,5 @@
 package com.cesoft.cesardoom2
 
-import com.google.ar.sceneform.math.Vector3
 import io.github.sceneview.math.Position
 import org.junit.Assert
 import org.junit.Test
@@ -14,7 +13,7 @@ class LocalCameraPositionTest {
 
         val dir = Util3D.getLocalCameraPosition(angle, anchorPos, cameraPos)
 
-        Assert.assertEquals(Vector3(0f, 0f, 3f), dir)
+        Assert.assertEquals(Position(0f, 0f, 3f), dir)
     }
 
     @Test
@@ -25,7 +24,7 @@ class LocalCameraPositionTest {
 
         val dir = Util3D.getLocalCameraPosition(angle, anchorPos, cameraPos)
 
-        Assert.assertEquals(Vector3(3f, 0f, 0f), dir)
+        Assert.assertEquals(Position(3f, 0f, 0f), dir)
     }
 
     @Test
@@ -36,7 +35,7 @@ class LocalCameraPositionTest {
 
         val dir = Util3D.getLocalCameraPosition(angle, anchorPos, cameraPos)
 
-        Assert.assertEquals(Vector3(3f, 0f, 0f), dir)
+        Assert.assertEquals(Position(3f, 0f, 0f), dir)
     }
 
     @Test
@@ -47,6 +46,6 @@ class LocalCameraPositionTest {
 
         val dir = Util3D.getLocalCameraPosition(angle, anchorPos, cameraPos)
 
-        Assert.assertEquals(Vector3(0f, 0f, -3f), dir)
+        Assert.assertEquals(Position(0f, 0f, -3f), dir)
     }
 }

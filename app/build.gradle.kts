@@ -69,4 +69,7 @@ dependencies {
 
     // 3D and AR Engine
     implementation("io.github.sceneview:arsceneview:0.10.2")
+
+    // Change system bar color
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.27.0")
 }

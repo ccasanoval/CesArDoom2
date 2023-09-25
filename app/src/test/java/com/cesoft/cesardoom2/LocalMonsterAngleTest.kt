@@ -14,11 +14,14 @@ class LocalMonsterAngleTest {
         val worldPosition = Position(0f, 0f, -5f)
         val cameraPosition = Position(0f, 0f, 0f)
         val angle = 0f
-
-        val ret = Util3D.getLocalMonsterAngle(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val ret = Util3D.getLocalMonsterAngle(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -31,11 +34,14 @@ class LocalMonsterAngleTest {
         val worldPosition = Position(0f, 0f, -5f)
         val cameraPosition = Position(10f, 0f, -5f)
         val angle = 0f
-
-        val ret = Util3D.getLocalMonsterAngle(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val ret = Util3D.getLocalMonsterAngle(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -48,11 +54,14 @@ class LocalMonsterAngleTest {
         val worldPosition = Position(0f, 0f, -5f)
         val cameraPosition = Position(-10f, 0f, -5f)
         val angle = 0f
-
-        val ret = Util3D.getLocalMonsterAngle(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val ret = Util3D.getLocalMonsterAngle(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -65,11 +74,14 @@ class LocalMonsterAngleTest {
         val worldPosition = Position(0f, 0f, -5f)
         val cameraPosition = Position(0f, 0f, -15f)
         val angle = 0f
-
-        val ret = Util3D.getLocalMonsterAngle(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val ret = Util3D.getLocalMonsterAngle(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -82,11 +94,14 @@ class LocalMonsterAngleTest {
         val worldPosition = Position(0f, 0f, -5f)
         val cameraPosition = Position(0f, 0f, -15f)
         val angle = 0f
-
-        val ret = Util3D.getLocalMonsterAngle(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val ret = Util3D.getLocalMonsterAngle(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 

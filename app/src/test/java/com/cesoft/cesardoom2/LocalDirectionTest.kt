@@ -13,11 +13,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.00f, -1.00f, 0.00f)
         val cameraPosition = Position(0.00f, 0.00f, 10.00f)
         val angle = 90f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -30,11 +33,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.0f, -1.00f, 0.00f)
         val cameraPosition = Position(0.0f, 0.00f, -10.0f)
         val angle = 90f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
         Assert.assertEquals(Position(-1.0f, 0f, 0.0f), pos)//-0?
@@ -46,11 +52,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.0f, -1.00f, 0.00f)
         val cameraPosition = Position(-10.0f, 0.00f, 0.0f)
         val angle = 90f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -63,11 +72,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.0f, -1.00f, 0.00f)
         val cameraPosition = Position(10.0f, 0.00f, 0.0f)
         val angle = 90f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -80,11 +92,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.0f, -1.00f, 0.00f)
         val cameraPosition = Position(1.0f, 0.00f, 4.0f)
         val angle = 90f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -97,11 +112,14 @@ class LocalDirectionTest {
         val worldPosition = Position(0.0f, 0.0f, 3.0f)
         val cameraPosition = Position(0.0f, 0.0f, 0.0f)
         val angle = 180f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
 
@@ -114,11 +132,14 @@ class LocalDirectionTest {
         val worldPosition = Position(3.54f, -1.09f, 0.61f)
         val cameraPosition = Position(0.27f, 0.11f, 0.22f)
         val angle = 96.753876f
-
-        val pos = Util3D.getLocalDirection(
+        val realWorldPosition = Util3D.getRealWorldPosition(
             angle = angle,
             modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            worldPosition = worldPosition
+        )
+        val pos = Util3D.getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         )
         val pos2 = Position(

@@ -60,11 +60,16 @@ class Monster(arSceneView: ArSceneView) {
             val modelPosition = arModelNode.modelPosition
             val cameraPosition = camera.position
 
+            val realWorldPosition = getRealWorldPosition(
+                angle = angle,
+                modelPosition = modelPosition,
+                worldPosition = worldPosition
+            )
+
             //Rotate monster
             val monsterAngle = getLocalMonsterAngle(
                 angle = angle,
-                modelPosition = modelPosition,
-                worldPosition = worldPosition,
+                realWorldPosition = realWorldPosition,
                 cameraPosition = camera.position
             )
             arModelNode.modelRotation = Rotation(0f, monsterAngle, 0f)
@@ -83,17 +88,14 @@ class Monster(arSceneView: ArSceneView) {
                     val delta = .25f * deltaTime
                     val dir = getLocalDirection(
                         angle = angle,
-                        modelPosition = modelPosition,
-                        worldPosition = worldPosition,
+                        realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
                     arModelNode.modelPosition += dir * delta
                     //arModelNode.modelPosition += Position(0f, 0f, 1f) * delta//dir * delta//TODO: TESTING
 
                     val dist2 = distance2(
-                        angle = angle,
-                        modelPosition = modelPosition,
-                        worldPosition = worldPosition,
+                        realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
                     if(dist2 < DistAttack) {
@@ -103,9 +105,7 @@ class Monster(arSceneView: ArSceneView) {
                 MonsterAnimation.Attack -> {
                     //.. check distance again
                     val dist2 = distance2(
-                        angle = angle,
-                        modelPosition = modelPosition,
-                        worldPosition = worldPosition,
+                        realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
                     //Log.e("Mnstr", "attack-----------dist2 = $dist2")
@@ -156,27 +156,23 @@ class Monster(arSceneView: ArSceneView) {
                     worldPosition = worldPosition,
                     cameraPosition = camera.position
                 )
-                val distance = distance(
-                    angle = angle,
-                    modelPosition = modelPosition,
-                    worldPosition = worldPosition,
-                    cameraPosition = camera.position
-                )
                 val realWorldPosition = getRealWorldPosition(
                     angle = angle,
                     modelPosition = modelPosition,
                     worldPosition = worldPosition
                 )
+                val distance = distance(
+                    realWorldPosition = realWorldPosition,
+                    cameraPosition = camera.position
+                )
                 val localDirection = getLocalDirection(
                     angle = angle,
-                    modelPosition = modelPosition,
-                    worldPosition = worldPosition,
+                    realWorldPosition = realWorldPosition,
                     cameraPosition = camera.position
                 )
                 val localAngle = getLocalMonsterAngle(
                     angle = angle,
-                    modelPosition = modelPosition,
-                    worldPosition = worldPosition,
+                    realWorldPosition = realWorldPosition,
                     cameraPosition = camera.position
                 )
                 Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")

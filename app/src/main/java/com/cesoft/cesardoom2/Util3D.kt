@@ -2,9 +2,7 @@ package com.cesoft.cesardoom2
 
 import com.google.ar.sceneform.math.Vector3
 import io.github.sceneview.math.Position
-import io.github.sceneview.math.toVector3
 import kotlin.math.abs
-import kotlin.math.atan
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
@@ -14,7 +12,6 @@ import kotlin.math.sqrt
 object Util3D {
     private const val DEGREES_TO_RADIANS = 0.017453292519943295
     fun toRadians(value: Float): Double {
-        //val v = if(value > 360) value - 360 else if(value < -90) value + 360 else value
         return value * DEGREES_TO_RADIANS
     }
     fun toDegrees(value: Double): Double {
@@ -23,14 +20,11 @@ object Util3D {
 
     fun getLocalMonsterAngle(
         angle: Float,
-        modelPosition: Position,//TODO: other with param: realWorldPos, so to not duplicate calculus
-        worldPosition: Position,
+        realWorldPosition: Position,
         cameraPosition: Position
     ): Float {
-        val realPos = getRealWorldPosition(angle, modelPosition, worldPosition)
-        val x = cameraPosition.x - realPos.x.toDouble()
-        val z = cameraPosition.z - realPos.z.toDouble()
-
+        val x = cameraPosition.x - realWorldPosition.x.toDouble()
+        val z = cameraPosition.z - realWorldPosition.z.toDouble()
         return toDegrees(atan2(x, z)).toFloat() + angle
     }
 
@@ -48,27 +42,20 @@ object Util3D {
     }
 
     fun distance(
-        angle: Float,
-        modelPosition: Position,
-        worldPosition: Position,
+        realWorldPosition: Position,
         cameraPosition: Position
     ): Float {
         return sqrt(distance2(
-            angle = angle,
-            modelPosition = modelPosition,
-            worldPosition = worldPosition,
+            realWorldPosition = realWorldPosition,
             cameraPosition = cameraPosition
         ))
     }
     fun distance2(
-        angle: Float,
-        modelPosition: Position,
-        worldPosition: Position,
+        realWorldPosition: Position,
         cameraPosition: Position
     ): Float {
-        val modRot = getRealWorldPosition(angle, modelPosition, worldPosition)
-        val x = modRot.x - cameraPosition.x
-        val z = modRot.z - cameraPosition.z
+        val x = realWorldPosition.x - cameraPosition.x
+        val z = realWorldPosition.z - cameraPosition.z
         return x*x + z*z
     }
 
@@ -76,38 +63,38 @@ object Util3D {
         angle: Float,
         worldPosition: Position,
         cameraPosition: Position
-    ): Vector3 {
-        val mod3 = Vector3(
+    ): Position {
+//        val mod3 = Vector3(
+//            cameraPosition.x - worldPosition.x,
+//            0f,
+//            cameraPosition.z - worldPosition.z,
+//        )
+//        val mod = sqrt(mod3.x*mod3.x + mod3.z*mod3.z.toDouble())
+//        val alpha = Math.toRadians(angle.toDouble())
+//
+//        return Vector3(
+//            (mod * sin(alpha)).toFloat(),
+//            0f,
+//            (mod * cos(alpha)).toFloat(),
+//        )
+        val dir = Position(
             cameraPosition.x - worldPosition.x,
             0f,
-            cameraPosition.z - worldPosition.z,
+            cameraPosition.z - worldPosition.z
         )
-        val mod = sqrt(mod3.x*mod3.x + mod3.z*mod3.z.toDouble())
-        //val rotY = angle//worldRotation.y
-        val alpha = Math.toRadians(angle.toDouble())
+        return rotateRealToLocal(angle, dir)
 
-        return Vector3(
-            (mod * sin(alpha)).toFloat(),
-            0f,
-            (mod * cos(alpha)).toFloat(),
-        )
-    }
+    }//TODO !!!!!!
 
     fun getLocalDirection(
         angle: Float,
-        modelPosition: Position,
-        worldPosition: Position,
+        realWorldPosition: Position,
         cameraPosition: Position
     ): Position {
-        val realWorldPos = getRealWorldPosition(
-            angle = angle,
-            modelPosition = modelPosition,
-            worldPosition = worldPosition
-        )
         val dir = Vector3(
-            cameraPosition.x - realWorldPos.x,
+            cameraPosition.x - realWorldPosition.x,
             0f,
-            cameraPosition.z - realWorldPos.z,
+            cameraPosition.z - realWorldPosition.z,
         ).normalized()
         return rotateRealToLocal(angle = angle, position = Position(dir.x, dir.y, dir.z))
     }
