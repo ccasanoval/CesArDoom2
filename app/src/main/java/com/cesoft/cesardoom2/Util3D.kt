@@ -4,6 +4,8 @@ import com.google.ar.sceneform.math.Vector3
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.toVector3
 import kotlin.math.abs
+import kotlin.math.atan
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.sin
@@ -14,6 +16,22 @@ object Util3D {
     fun toRadians(value: Float): Double {
         //val v = if(value > 360) value - 360 else if(value < -90) value + 360 else value
         return value * DEGREES_TO_RADIANS
+    }
+    fun toDegrees(value: Double): Double {
+        return value / DEGREES_TO_RADIANS
+    }
+
+    fun getLocalMonsterAngle(
+        angle: Float,
+        modelPosition: Position,//TODO: other with param: realWorldPos, so to not duplicate calculus
+        worldPosition: Position,
+        cameraPosition: Position
+    ): Float {
+        val realPos = getRealWorldPosition(angle, modelPosition, worldPosition)
+        val x = cameraPosition.x - realPos.x.toDouble()
+        val z = cameraPosition.z - realPos.z.toDouble()
+
+        return toDegrees(atan2(x, z)).toFloat() + angle
     }
 
     fun getRealWorldPosition(

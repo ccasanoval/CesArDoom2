@@ -6,6 +6,7 @@ import com.cesoft.cesardoom2.Util3D.distance
 import com.cesoft.cesardoom2.Util3D.distance2
 import com.cesoft.cesardoom2.Util3D.getLocalCameraPosition
 import com.cesoft.cesardoom2.Util3D.getLocalDirection
+import com.cesoft.cesardoom2.Util3D.getLocalMonsterAngle
 import com.cesoft.cesardoom2.Util3D.getRealWorldPosition
 import com.google.ar.core.HitResult
 import com.google.ar.core.Pose
@@ -17,7 +18,9 @@ import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.ArNode
 import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.math.Position
+import io.github.sceneview.math.Rotation
 import java.util.Locale
+import kotlin.math.atan
 
 //TODO: Detect a change in camera position so monster can follow it: ANGLE
 //TODO: Sound Fx
@@ -52,6 +55,20 @@ class Monster(arSceneView: ArSceneView) {
     fun update(deltaTime: Float, camera: Pose) {
         log(deltaTime, camera)
         if(arModelNode.isAnchored) {
+            val angle = anchorAngle
+            val worldPosition = arModelNode.worldPosition
+            val modelPosition = arModelNode.modelPosition
+            val cameraPosition = camera.position
+
+            //Rotate monster
+            val monsterAngle = getLocalMonsterAngle(
+                angle = angle,
+                modelPosition = modelPosition,
+                worldPosition = worldPosition,
+                cameraPosition = camera.position
+            )
+            arModelNode.modelRotation = Rotation(0f, monsterAngle, 0f)
+
             when(state) {
                 MonsterAnimation.Idle -> {
                     idleStart += deltaTime
@@ -62,10 +79,7 @@ class Monster(arSceneView: ArSceneView) {
                 }
                 MonsterAnimation.Walk,
                 MonsterAnimation.Run -> {
-                    val angle = anchorAngle
-                    val worldPosition = arModelNode.worldPosition
-                    val modelPosition = arModelNode.modelPosition
-                    val cameraPosition = camera.position
+
                     val delta = .25f * deltaTime
                     val dir = getLocalDirection(
                         angle = angle,
@@ -82,16 +96,11 @@ class Monster(arSceneView: ArSceneView) {
                         worldPosition = worldPosition,
                         cameraPosition = cameraPosition
                     )
-                    //Log.e("Mnstr", "run-----------dist2 = $dist2")
                     if(dist2 < DistAttack) {
                         changeState(MonsterAnimation.Attack)
                     }
                 }
                 MonsterAnimation.Attack -> {
-                    val angle = anchorAngle
-                    val worldPosition = arModelNode.worldPosition
-                    val modelPosition = arModelNode.modelPosition
-                    val cameraPosition = camera.position
                     //.. check distance again
                     val dist2 = distance2(
                         angle = angle,
@@ -164,10 +173,17 @@ class Monster(arSceneView: ArSceneView) {
                     worldPosition = worldPosition,
                     cameraPosition = camera.position
                 )
+                val localAngle = getLocalMonsterAngle(
+                    angle = angle,
+                    modelPosition = modelPosition,
+                    worldPosition = worldPosition,
+                    cameraPosition = camera.position
+                )
                 Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")
                 Log.e("Monsrer", "--- Real Pos=${realWorldPosition.toS()}   Model Pos=${modelPosition.toS()}   World Pos=${worldPosition.toS()}  Anchor Pos=${arModelNode.anchor!!.pose!!.position.toS()}")
                 Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}")
                 Log.e("Monsrer", "---------------------DIR LOC=${localDirection.toS()} // CAM LOC=${localCameraPosition.toS()}---------------------------------------------")
+                Log.e("Monster", "--------------- monster angle = $localAngle")
                 //position == worldPosition == anchor.pose.position (but anchor changes over time if plane relocates...)
             }
         }

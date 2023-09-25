@@ -45,7 +45,7 @@ class RotateLocalTest {
         val res = Position(
             -(sin(Util3D.toRadians(angle))).toFloat(),
             0f,
-            (cos(Util3D.toRadians(angle))).toFloat()
+            Util3D.clean(cos(Util3D.toRadians(angle))).toFloat()
         )
         Assert.assertEquals(res, Util3D.rotateLocalToReal(angle, pos))
     }
