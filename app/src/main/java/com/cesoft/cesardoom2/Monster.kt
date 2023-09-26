@@ -9,6 +9,7 @@ import com.cesoft.cesardoom2.Util3D.getRealWorldPosition
 import com.google.ar.core.HitResult
 import com.google.ar.core.Pose
 import com.google.ar.sceneform.math.Vector3
+import dev.romainguy.kotlin.math.Float3
 import io.github.sceneview.ar.ArSceneView
 import io.github.sceneview.ar.arcore.position
 import io.github.sceneview.ar.arcore.rotation
@@ -31,14 +32,30 @@ class Monster(arSceneView: ArSceneView) {
     private var state = MonsterAnimation.Idle
     private var anchorAngle = 0f
 
+    private var walkOrRun = true
     private var idleStart = 0f//TODO: state machine + time
     private var anchorDelay = 0f
+    private var dieDelay = 0f
+
+    private fun init() {
+        state = MonsterAnimation.Idle
+        anchorAngle = 0f
+        walkOrRun = !walkOrRun
+        idleStart = 0f
+        anchorDelay = 0f
+        dieDelay = 0f
+        arModelNode.detachAnchor()
+        arModelNode.anchor = null
+        arModelNode.scale = Float3(1f,1f,1f)
+        arModelNode.modelPosition = Position()
+        //arModelNode.pose = Pose.IDENTITY
+    }
 
     fun load(): Monster {
         arModelNode.loadModelGlbAsync(
             glbFileLocation = "gonome.glb",
             autoAnimate = false,
-            scaleToUnits = 1.20f,
+            scaleToUnits = 1f,//1.25f,
             //centerOrigin = Position(x = 0f, y = 0f, z = 0f) ,
             onError = { exception ->
                 Log.e("ArScreen", "Load Model-------------------e: $exception")
@@ -56,7 +73,7 @@ class Monster(arSceneView: ArSceneView) {
     }
 
     fun update(deltaTime: Float, camera: Pose) {
-//        log(deltaTime, camera)
+        //log(deltaTime, camera)
         if(arModelNode.isAnchored) {
             val angle = anchorAngle
             val worldPosition = arModelNode.worldPosition
@@ -87,7 +104,10 @@ class Monster(arSceneView: ArSceneView) {
                     idleStart += deltaTime
                     if(idleStart > IdleDelay) {
                         idleStart = 0f
-                        changeState(MonsterAnimation.Walk)
+                        if(walkOrRun)
+                            changeState(MonsterAnimation.Walk)
+                        else
+                            changeState(MonsterAnimation.Run)
                         SoundFx.play(sound = Sound.Awake, distance2 = distance2)
                     }
                 }
@@ -98,7 +118,7 @@ class Monster(arSceneView: ArSceneView) {
                         cameraPosition = cameraPosition
                     )
                     val delta = DeltaWalk * deltaTime
-                    doWalk(distance2 = distance2, direction = dir, delta = delta)
+                    ifWalking(distance2 = distance2, direction = dir, delta = delta)
                 }
                 MonsterAnimation.Run -> {
                     val dir = getLocalDirection(
@@ -107,18 +127,27 @@ class Monster(arSceneView: ArSceneView) {
                         cameraPosition = cameraPosition
                     )
                     val delta = DeltaRun * deltaTime
-                    doWalk(distance2 = distance2, direction = dir, delta = delta)
+                    ifWalking(distance2 = distance2, direction = dir, delta = delta)
                 }
                 MonsterAnimation.Attack -> {
                     //TODO: Player health -= delta
-                    doAttack(distance2)
+                    ifAttacking(distance2)
+                }
+                MonsterAnimation.Die -> {
+                    dieDelay += deltaTime
+                    if(dieDelay > DieDelay) {
+                        init()
+                    }
+                    else {
+                        arModelNode.scaleModel(1 - deltaTime)
+                    }
                 }
                 else -> {}
             }
         }
     }
 
-    private fun doWalk(distance2: Float, direction: Position, delta: Float) {
+    private fun ifWalking(distance2: Float, direction: Position, delta: Float) {
         arModelNode.modelPosition += direction * delta
         if(distance2 < DistAttack) {
             changeState(MonsterAnimation.Attack)
@@ -129,7 +158,7 @@ class Monster(arSceneView: ArSceneView) {
         }
     }
 
-    private fun doAttack(distance2: Float) {
+    private fun ifAttacking(distance2: Float) {
         if(distance2 > DistFollow) {
             changeState(MonsterAnimation.Run)
             SoundFx.stop()
@@ -137,12 +166,21 @@ class Monster(arSceneView: ArSceneView) {
         }
     }
 
-    private fun changeState(newState: MonsterAnimation) {
+    private fun changeState(newState: MonsterAnimation, loop: Boolean = true) {
+android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
         state = newState
         for(i in 0..(arModelNode.animator?.animationCount ?: 0)) {
             arModelNode.stopAnimation(i)
         }
-        arModelNode.playAnimation(state.animation, true)
+        arModelNode.playAnimation(state.animation, loop)
+    }
+
+    fun shoot(distance: Float) {
+        if(state != MonsterAnimation.Die) {
+            changeState(MonsterAnimation.Die, false)
+            SoundFx.play(sound = Sound.Hurt, distance2 = distance * distance)
+            //TODO: Points++
+        }
     }
 
     fun anchor(deltaTime: Float): Boolean {
@@ -215,7 +253,7 @@ class Monster(arSceneView: ArSceneView) {
 //                )
 //                Log.e("Monsrer", "--- Rot = $angle                  Dist = $distance   -   ${state.name}")
 //                Log.e("Monsrer", "--- Real Pos=${realWorldPosition.toS()}   Model Pos=${modelPosition.toS()}   World Pos=${worldPosition.toS()}  Anchor Pos=${arModelNode.anchor!!.pose!!.position.toS()}")
-//                Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}")
+//                Log.e("Monsrer", "--- Cam Pos = ${camera.position.toS()}   Cam Rot = ${camera.rotation.toS()}")
 //                Log.e("Monsrer", "---------------------DIR LOC=${localDirection.toS()} // CAM LOC=${localCameraPosition.toS()}---------------------------------------------")
 //                Log.e("Monster", "--------------- monster angle = $localAngle")
 //                //position == worldPosition == anchor.pose.position (but anchor changes over time if plane relocates...)
@@ -226,9 +264,12 @@ class Monster(arSceneView: ArSceneView) {
     companion object {
         private const val DistAttack = 0.8f
         private const val DistFollow = 1.1f
-        private const val IdleDelay = 3
-        private const val AnchorDelay = 5
-        private const val DeltaRun = .30f
+
+        private const val IdleDelay = 2
+        private const val AnchorDelay = 4
+        private const val DieDelay = 4.7f
+
+        private const val DeltaRun = .32f
         private const val DeltaWalk = .25f
     }
 }
