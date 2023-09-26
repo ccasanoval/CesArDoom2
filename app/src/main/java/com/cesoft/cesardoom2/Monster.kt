@@ -19,31 +19,38 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import java.util.Locale
 
+//TODO: Button to close / button to mute?
+//TODO: Change color of plane?
 
-//TODO: Way to shoot the monster and kill it
+//TODO: Way to shoot the monster and kill it // After this, create another one
 //TODO: Show life level bar...
 //TODO: Depth & light
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
 class Monster(arSceneView: ArSceneView) {
     private val arModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT)
     private var state = MonsterAnimation.Idle
-    private var idleStart = 0f//TODO: state machine + time
     private var anchorAngle = 0f
 
-    fun load(nodes: SnapshotStateList<ArNode>): Monster {
+    private var idleStart = 0f//TODO: state machine + time
+    private var anchorDelay = 0f
+
+    fun load(): Monster {
         arModelNode.loadModelGlbAsync(
             glbFileLocation = "gonome.glb",
             autoAnimate = false,
-            scaleToUnits = 1f,
+            scaleToUnits = 1.20f,
             //centerOrigin = Position(x = 0f, y = 0f, z = 0f) ,
             onError = { exception ->
                 Log.e("ArScreen", "Load Model-------------------e: $exception")
             },
             onLoaded = { modelInstance ->
                 Log.e("ArScreen", "Load Model-------------------ok: ${modelInstance.root}")
-                //_isLoaded = true
             }
         )
+        return this
+    }
+
+    fun show(nodes: SnapshotStateList<ArNode>): Monster {
         nodes.add(arModelNode)
         return this
     }
@@ -138,12 +145,30 @@ class Monster(arSceneView: ArSceneView) {
         arModelNode.playAnimation(state.animation, true)
     }
 
+    fun anchor(deltaTime: Float): Boolean {
+        if( ! arModelNode.isAnchored && deltaTime < 1000) {
+            anchorDelay += deltaTime
+            if(anchorDelay > AnchorDelay) {
+                anchorDelay = 0f
+                SoundFx.stop()
+                idleStart = 0f
+                changeState(MonsterAnimation.Idle)
+
+                arModelNode.detachAnchor()
+                anchorAngle = arModelNode.worldRotation.y
+                arModelNode.anchor()
+                return true
+            }
+        }
+        return false
+    }
+
     fun anchor(hitResult: HitResult) {
         SoundFx.stop()
         idleStart = 0f
         changeState(MonsterAnimation.Idle)
 
-        arModelNode.centerModel(Position(0f,-1f,0f))
+        //arModelNode.centerModel(Position(0f,-1f,0f))
         arModelNode.rotation = hitResult.hitPose.rotation
 
         arModelNode.detachAnchor()
@@ -202,8 +227,9 @@ class Monster(arSceneView: ArSceneView) {
         private const val DistAttack = 0.8f
         private const val DistFollow = 1.1f
         private const val IdleDelay = 3
-        private const val DeltaRun = .28f
-        private const val DeltaWalk = .20f
+        private const val AnchorDelay = 5
+        private const val DeltaRun = .30f
+        private const val DeltaWalk = .25f
     }
 }
 
