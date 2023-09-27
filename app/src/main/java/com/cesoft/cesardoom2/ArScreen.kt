@@ -27,8 +27,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.ar.core.Config.LightEstimationMode
+import com.google.ar.core.HitResult
 import io.github.sceneview.ar.ARScene
-import io.github.sceneview.ar.arcore.isTracking
 import io.github.sceneview.ar.node.ArNode
 
 
@@ -41,8 +41,11 @@ fun ArScreen() {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
-    val buttonSize = screenHeight*.075f
-    val buttonPosY = screenHeight*.78f - buttonSize
+    val buttonSize = screenHeight*.070f
+    val buttonPosY = screenHeight*.85f - buttonSize
+    val crosshairSize = buttonSize*2
+    val crosshairPosX = screenWidth/2 - crosshairSize
+    val crosshairPosY = screenHeight/2 - crosshairSize
 
     val density = LocalDensity.current
     val screenHeightPx = with(density) { configuration.screenHeightDp.dp.roundToPx() }
@@ -72,16 +75,22 @@ fun ArScreen() {
                             activity?.finish()
                         }
                 )
-                //TODO: Show crossbow in the middle of screen
+                Icon(
+                    painter = painterResource(R.drawable.crosshair),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(crosshairSize)
+                        .offset(x = crosshairPosX, y = -crosshairPosY)
+                )
                 Icon(
                     painter = painterResource(R.drawable.rifle),
                     contentDescription = "Disparar",
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .padding(0.dp)
-                        .offset(x = 80.dp, y = 16.dp)
+                        .offset(x = 0.dp, y = 16.dp)
                         .clickable {
-                            //monster.value?.shoot()
                             shot.value = true
                         }
                 )
@@ -90,7 +99,7 @@ fun ArScreen() {
         floatingActionButtonPosition = FabPosition.Center
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            ArScene(shot, screenWidthPx, screenHeightPx)
+            ArScene(shot = shot, screenWidthPx = screenWidthPx, screenHeightPx = screenHeightPx)
         }
     }
 }
@@ -116,34 +125,42 @@ fun ArScene(
             monster.value = Monster(arSceneView).load().show(nodes)
         },
         onSessionCreate = { session ->
-//                if(session.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
-//                    session.depthMode = Config.DepthMode.AUTOMATIC
+//            if(session.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
+//                session.depthMode = Config.DepthMode.AUTOMATIC
         },
         onFrame = { arFrame ->
+            val deltaTime = arFrame.time.intervalSeconds.toFloat()
 
             if(shot.value) {
                 SoundFx.play(Sound.Gun)
-                val results = arFrame.frame.hitTest(screenWidthPx / 2f, screenHeightPx / 2f)
-                for(hit in results) {
+                val hits = arFrame.frame.hitTest(screenWidthPx / 2f, screenHeightPx / 2f)
+                for(hit in hits) {
+                    //android.util.Log.e("ArScene", "ArScene------------------ HIT= ${hit.trackable.javaClass}")
                     if(hit.trackable is com.google.ar.core.Point) {
-                        android.util.Log.e("ArScene", "ArScene-------------------${hit.distance} +++ ${hit.trackable} +++ ${hit.isTracking}")
+                        //android.util.Log.e("ArScene", "ArScene-------------------hit = ${hit.distance} +++ ${hit.trackable.javaClass} +++ ${hit.isTracking}")
                         monster.value?.shoot(hit.distance)
                     }
                 }
                 shot.value = false
             }
 
-            val deltaTime = arFrame.time.intervalSeconds.toFloat()
-            if(monster.value?.anchor(deltaTime) == true) {
-                arSession?.instantPlacementEnabled = false
-            }
+            monster.value?.anchor(deltaTime) //== true) arSession?.instantPlacementEnabled = false
+
             monster.value?.update(
                 deltaTime = deltaTime,
                 camera = arFrame.camera.pose,
             )
         },
         onTap = { hitResult ->
-            monster.value?.anchor(hitResult)
+            //monster.value?.anchor(hitResult)
+            shoot(hitResult, monster.value)
         }
     )
+}
+
+fun shoot(hitResult: HitResult, monster: Monster?) {
+    SoundFx.play(Sound.Gun)
+    if(hitResult.trackable is com.google.ar.core.Point) {
+        monster?.shoot(hitResult.distance)
+    }
 }

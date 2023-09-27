@@ -1,8 +1,9 @@
 package com.cesoft.cesardoom2
 
 enum class MonsterAnimation(val animation: String) {
+    None(""),
     Attack("attack1"),
-    Die("diebackward"),
+    Die("diebackward"),//DieDelay = 4.8f
     //Die("dieheadshot_2"),//DieDelay = 2.8f
     Idle("idle2"),
     Happy("sohappy"),

@@ -29,7 +29,7 @@ import java.util.Locale
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
 class Monster(arSceneView: ArSceneView) {
     private val arModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT)
-    private var state = MonsterAnimation.Idle
+    private var state = MonsterAnimation.None
     private var anchorAngle = 0f
 
     private var walkOrRun = true
@@ -38,17 +38,17 @@ class Monster(arSceneView: ArSceneView) {
     private var dieDelay = 0f
 
     private fun init() {
-        state = MonsterAnimation.Idle
         anchorAngle = 0f
         walkOrRun = !walkOrRun
         idleStart = 0f
         anchorDelay = 0f
         dieDelay = 0f
         arModelNode.detachAnchor()
-        arModelNode.anchor = null
+        //arModelNode.anchor = null
         arModelNode.scale = Float3(1f,1f,1f)
         arModelNode.modelPosition = Position()
         //arModelNode.pose = Pose.IDENTITY
+        state = MonsterAnimation.None
     }
 
     fun load(): Monster {
@@ -138,9 +138,6 @@ class Monster(arSceneView: ArSceneView) {
                     if(dieDelay > DieDelay) {
                         init()
                     }
-                    else {
-                        arModelNode.scaleModel(1 - deltaTime)
-                    }
                 }
                 else -> {}
             }
@@ -184,29 +181,29 @@ android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
     }
 
     fun anchor(deltaTime: Float): Boolean {
-        if( ! arModelNode.isAnchored && deltaTime < 1000) {
+        if(state == MonsterAnimation.None && deltaTime < .1f) {
             anchorDelay += deltaTime
             if(anchorDelay > AnchorDelay) {
-                anchorDelay = 0f
+                //android.util.Log.e("Monster", "anchor-----------------DONE $anchorDelay  ${arModelNode.isTracking}")
                 SoundFx.stop()
+                //arModelNode.detachAnchor()
+                arModelNode.anchor()
+                anchorAngle = arModelNode.worldRotation.y
+                anchorDelay = 0f
                 idleStart = 0f
                 changeState(MonsterAnimation.Idle)
-
-                arModelNode.detachAnchor()
-                anchorAngle = arModelNode.worldRotation.y
-                arModelNode.anchor()
                 return true
             }
         }
         return false
     }
 
+    //TODO: Release -> Remove
     fun anchor(hitResult: HitResult) {
         SoundFx.stop()
         idleStart = 0f
         changeState(MonsterAnimation.Idle)
 
-        //arModelNode.centerModel(Position(0f,-1f,0f))
         arModelNode.rotation = hitResult.hitPose.rotation
 
         arModelNode.detachAnchor()
@@ -267,7 +264,7 @@ android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
 
         private const val IdleDelay = 2
         private const val AnchorDelay = 4
-        private const val DieDelay = 4.7f
+        private const val DieDelay = 4.8f
 
         private const val DeltaRun = .32f
         private const val DeltaWalk = .25f
