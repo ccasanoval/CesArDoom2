@@ -20,10 +20,6 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import java.util.Locale
 
-//TODO: Button to close / button to mute?
-//TODO: Change color of plane?
-
-//TODO: Way to shoot the monster and kill it // After this, create another one
 //TODO: Show life level bar...
 //TODO: Depth & light
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
@@ -36,6 +32,8 @@ class Monster(arSceneView: ArSceneView) {
     private var idleStart = 0f//TODO: state machine + time
     private var anchorDelay = 0f
     private var dieDelay = 0f
+
+    private var generation = 0
 
     private fun init() {
         anchorAngle = 0f
@@ -112,22 +110,24 @@ class Monster(arSceneView: ArSceneView) {
                     }
                 }
                 MonsterAnimation.Walk -> {
-                    val dir = getLocalDirection(
+                    ifMoving(
+                        run = false,
+                        deltaTime = deltaTime,
+                        distance2 = distance2,
                         angle = angle,
                         realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
-                    val delta = DeltaWalk * deltaTime
-                    ifWalking(distance2 = distance2, direction = dir, delta = delta)
                 }
                 MonsterAnimation.Run -> {
-                    val dir = getLocalDirection(
+                    ifMoving(
+                        run = true,
+                        deltaTime = deltaTime,
+                        distance2 = distance2,
                         angle = angle,
                         realWorldPosition = realWorldPosition,
                         cameraPosition = cameraPosition
                     )
-                    val delta = DeltaRun * deltaTime
-                    ifWalking(distance2 = distance2, direction = dir, delta = delta)
                 }
                 MonsterAnimation.Attack -> {
                     //TODO: Player health -= delta
@@ -144,7 +144,25 @@ class Monster(arSceneView: ArSceneView) {
         }
     }
 
-    private fun ifWalking(distance2: Float, direction: Position, delta: Float) {
+    private fun ifMoving(
+        run: Boolean,
+        deltaTime: Float,
+        distance2: Float,
+        angle: Float,
+        realWorldPosition: Position,
+        cameraPosition: Position
+    ) {
+        val dir = getLocalDirection(
+            angle = angle,
+            realWorldPosition = realWorldPosition,
+            cameraPosition = cameraPosition
+        )
+        val deltaWalkRun = if(run) DeltaRun else DeltaWalk
+        val delta = (deltaWalkRun + (generation%3)*.15f) * deltaTime
+        move(distance2 = distance2, direction = dir, delta = delta)
+    }
+
+    private fun move(distance2: Float, direction: Position, delta: Float) {
         arModelNode.modelPosition += direction * delta
         if(distance2 < DistAttack) {
             changeState(MonsterAnimation.Attack)
@@ -175,7 +193,9 @@ android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
     fun shoot(distance: Float) {
         if(state != MonsterAnimation.Die) {
             changeState(MonsterAnimation.Die, false)
+            SoundFx.stop(Sound.Attack)
             SoundFx.play(sound = Sound.Hurt, distance2 = distance * distance)
+            generation++
             //TODO: Points++
         }
     }

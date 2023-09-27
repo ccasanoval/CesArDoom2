@@ -153,14 +153,6 @@ fun ArScene(
         },
         onTap = { hitResult ->
             //monster.value?.anchor(hitResult)
-            shoot(hitResult, monster.value)
         }
     )
-}
-
-fun shoot(hitResult: HitResult, monster: Monster?) {
-    SoundFx.play(Sound.Gun)
-    if(hitResult.trackable is com.google.ar.core.Point) {
-        monster?.shoot(hitResult.distance)
-    }
 }
