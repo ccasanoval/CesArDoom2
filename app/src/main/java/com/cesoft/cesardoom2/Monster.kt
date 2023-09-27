@@ -1,6 +1,7 @@
 package com.cesoft.cesardoom2
 
 import android.util.Log
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.cesoft.cesardoom2.Util3D.distance2
 import com.cesoft.cesardoom2.Util3D.getLocalDirection
@@ -23,13 +24,13 @@ import java.util.Locale
 //TODO: Show life level bar...
 //TODO: Depth & light
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
-class Monster(arSceneView: ArSceneView) {
+class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatState) {
     private val arModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT)
     private var state = MonsterAnimation.None
     private var anchorAngle = 0f
 
     private var walkOrRun = true
-    private var idleStart = 0f//TODO: state machine + time
+    private var idleStart = 0f//TODO: state machine = STATUS
     private var anchorDelay = 0f
     private var dieDelay = 0f
 
@@ -130,8 +131,12 @@ class Monster(arSceneView: ArSceneView) {
                     )
                 }
                 MonsterAnimation.Attack -> {
-                    //TODO: Player health -= delta
                     ifAttacking(distance2)
+                    painInflicted.floatValue += 5*deltaTime
+
+                    //TODO: When pain == 100% --> Monster wins!!!
+                    //TODO: Play sound: you are death
+                    //TODO: Button to restart?
                 }
                 MonsterAnimation.Die -> {
                     dieDelay += deltaTime
