@@ -99,8 +99,12 @@ fun ArScreen() {
                 // Health text
                 x = 5.dp
                 y -= exitSize
+                val health = 100 - pain.floatValue
+                val txt = if(health > 50) "❤ %.0f %%"
+                else if(health > 15) "❤️\u200D\uD83E\uDE79 %.0f %%"
+                else "\uD83D\uDC94 %.0f %%"
                 Text(
-                    text = "❤ %.0f %%".format(100 - pain.floatValue),
+                    text = txt.format(100 - pain.floatValue),
                     color = Color.Red,
                     style = TextStyle.Default.copy(
                         fontSize = 28.sp,
@@ -116,17 +120,32 @@ fun ArScreen() {
                         .offset(x = x, y = y)
                 )
 
-                // Crosshair
-                x = (screenCX - crosshairSize)/2f
-                y = -screenCY/2 + crosshairSize*2
-                Icon(
-                    painter = painterResource(R.drawable.crosshair),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .size(crosshairSize)
-                        .offset(x = x, y = y)
-                )
+                // Game over
+                if(health < 1) {
+                    x = 0.dp//(screenCX - crosshairSize) / 2f
+                    y = -screenCY / 2 + crosshairSize * 2
+                    Icon(
+                        painter = painterResource(R.drawable.gameover),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .width(350.dp)
+                            .offset(x = x, y = y)
+                    )
+                }
+                else {
+                    // Crosshair
+                    x = (screenCX - crosshairSize) / 2f
+                    y = -screenCY / 2 + crosshairSize * 2
+                    Icon(
+                        painter = painterResource(R.drawable.crosshair),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(crosshairSize)
+                            .offset(x = x, y = y)
+                    )
+                }
 
                 // Rifle
                 Icon(
@@ -184,7 +203,7 @@ fun ArScene(
         onFrame = { arFrame ->
             val deltaTime = arFrame.time.intervalSeconds.toFloat()
 
-            if(shot.value) {
+            if(shot.value && pain.floatValue < 98) {
                 SoundFx.play(Sound.Gun)
                 val hits = arFrame.frame.hitTest(screenWidthPx / 2f, screenHeightPx / 2f)
                 for(hit in hits) {
@@ -194,8 +213,8 @@ fun ArScene(
                         monster.value?.shoot(hit.distance)
                     }
                 }
-                shot.value = false
             }
+            shot.value = false
 
             monster.value?.anchor(deltaTime) //== true) arSession?.instantPlacementEnabled = false
 

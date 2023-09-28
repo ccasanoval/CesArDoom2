@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.SoundPool
 
 //Sounds: https://mixkit.co/free-sound-effects/monster/
-enum class Sound { Attack, Awake, Hurt, Gun }
+enum class Sound { Attack, Awake, Hurt, Laugh, Gun }
 object SoundFx {
     private var lastTime: Long = 0
     private lateinit var soundPool: SoundPool
@@ -14,6 +14,8 @@ object SoundFx {
     private var awakePlay: Int = 0
     private var hurt: Int = 0
     private var hurtPlay: Int = 0
+    private var laugh: Int = 0
+    private var laughPlay: Int = 0
     private var gun: Int = 0
     private var gunPlay: Int = 0
 
@@ -22,14 +24,15 @@ object SoundFx {
 
     fun init(context: Context) {
         soundPool = SoundPool.Builder()
-            .setMaxStreams(6)
+            .setMaxStreams(7)
             .build()
         soundPool.setOnLoadCompleteListener { _, _, status ->
             //if(status == 0) { } else { }
         }
-        attack = soundPool.load(context, R.raw.roar, 1)
-        awake = soundPool.load(context, R.raw.growl, 1)
+        attack = soundPool.load(context, R.raw.growl, 1)
+        awake = soundPool.load(context, R.raw.roar, 1)
         hurt = soundPool.load(context, R.raw.scream, 1)
+        laugh = soundPool.load(context, R.raw.laugh, 1)
         gun = soundPool.load(context, R.raw.gun, 1)
     }
 
@@ -44,6 +47,7 @@ object SoundFx {
                 soundPool.stop(attackPlay)
                 soundPool.stop(awakePlay)
                 soundPool.stop(hurtPlay)
+                soundPool.stop(laughPlay)
                 soundPool.stop(gunPlay)
             }
             Sound.Attack -> {
@@ -54,6 +58,9 @@ object SoundFx {
             }
             Sound.Hurt -> {
                 soundPool.stop(hurtPlay)
+            }
+            Sound.Laugh -> {
+                soundPool.stop(laughPlay)
             }
             Sound.Gun -> {
                 soundPool.stop(gunPlay)
@@ -78,6 +85,9 @@ object SoundFx {
             }
             Sound.Hurt -> {
                 hurtPlay = soundPool.play(hurt, vol, vol, priority, inLoop, rate)
+            }
+            Sound.Laugh -> {
+                laughPlay = soundPool.play(laugh, vol, vol, priority, inLoop, rate)
             }
             Sound.Gun -> {
                 gunPlay = soundPool.play(gun, vol, vol, priority, inLoop, rate)

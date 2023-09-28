@@ -33,6 +33,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
     private var idleStart = 0f//TODO: state machine = STATUS
     private var anchorDelay = 0f
     private var dieDelay = 0f
+    private var happyDelay = 0f
 
     private var generation = 0
 
@@ -42,6 +43,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
         idleStart = 0f
         anchorDelay = 0f
         dieDelay = 0f
+        happyDelay = 0f
         arModelNode.detachAnchor()
         //arModelNode.anchor = null
         arModelNode.scale = Float3(1f,1f,1f)
@@ -133,14 +135,22 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
                 MonsterAnimation.Attack -> {
                     ifAttacking(distance2)
                     painInflicted.floatValue += 5*deltaTime
-
-                    //TODO: When pain == 100% --> Monster wins!!!
-                    //TODO: Play sound: you are death
-                    //TODO: Button to restart?
+                    if(painInflicted.floatValue > 99f) {
+                        changeState(MonsterAnimation.Happy)
+                        SoundFx.stop()
+                        SoundFx.play(Sound.Laugh)
+                    }
                 }
                 MonsterAnimation.Die -> {
                     dieDelay += deltaTime
                     if(dieDelay > DieDelay) {
+                        init()
+                    }
+                }
+                MonsterAnimation.Happy -> {
+                    happyDelay += deltaTime
+                    if(happyDelay > HappyDelay) {
+                        painInflicted.floatValue = 0f
                         init()
                     }
                 }
@@ -290,6 +300,7 @@ android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
         private const val IdleDelay = 2
         private const val AnchorDelay = 4
         private const val DieDelay = 4.8f
+        private const val HappyDelay = 7f
 
         private const val DeltaRun = .32f
         private const val DeltaWalk = .25f
