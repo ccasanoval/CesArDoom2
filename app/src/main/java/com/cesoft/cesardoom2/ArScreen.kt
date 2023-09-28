@@ -187,12 +187,16 @@ fun ArScene(
     ARScene(
         modifier = Modifier.fillMaxSize(),
         nodes = nodes,
-        planeRenderer = true,//false,//TODO: Release => false
+        planeRenderer = false,//TODO:CES:DEBUG => true
         onCreate = { arSceneView ->
-            //arSceneView.lightEstimationMode = LightEstimationMode.ENVIRONMENTAL_HDR
-            arSceneView.lightEstimationMode = LightEstimationMode.AMBIENT_INTENSITY
+            //TODO: Depth & light
+            arSceneView.lightEstimationMode = LightEstimationMode.ENVIRONMENTAL_HDR
+            //arSceneView.lightEstimationMode = LightEstimationMode.AMBIENT_INTENSITY
+            arSceneView.lightEstimator?.cubeMapBuffer?.clear()
+
             //arSceneView.planeRenderer.isShadowReceiver = true
             //arSceneView.isDepthOcclusionEnabled = true
+
             arSceneView.instantPlacementEnabled = true
             monster.value = Monster(arSceneView, pain).load().show(nodes)
         },

@@ -21,16 +21,15 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import java.util.Locale
 
-//TODO: Show life level bar...
-//TODO: Depth & light
 //3D MODEL: https://www.turbosquid.com/es/3d-models/3d-improved-gonome-1901177
 class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatState) {
     private val arModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT)
     private var state = MonsterAnimation.None
     private var anchorAngle = 0f
 
+    //TODO: state machine = STATUS
     private var walkOrRun = true
-    private var idleStart = 0f//TODO: state machine = STATUS
+    private var idleStart = 0f
     private var anchorDelay = 0f
     private var dieDelay = 0f
     private var happyDelay = 0f
@@ -50,6 +49,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
         arModelNode.modelPosition = Position()
         //arModelNode.pose = Pose.IDENTITY
         state = MonsterAnimation.None
+        SoundFx.stop()
     }
 
     fun load(): Monster {
@@ -62,7 +62,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
                 Log.e("ArScreen", "Load Model-------------------e: $exception")
             },
             onLoaded = { modelInstance ->
-                Log.e("ArScreen", "Load Model-------------------ok: ${modelInstance.root}")
+//                Log.e("ArScreen", "Load Model-------------------ok: $modelInstance")
             }
         )
         return this
@@ -134,11 +134,11 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
                 }
                 MonsterAnimation.Attack -> {
                     ifAttacking(distance2)
-                    painInflicted.floatValue += 5*deltaTime
+                    painInflicted.floatValue += PainRate*deltaTime
                     if(painInflicted.floatValue > 99f) {
                         changeState(MonsterAnimation.Happy)
                         SoundFx.stop()
-                        SoundFx.play(Sound.Laugh)
+                        SoundFx.play(sound = Sound.Laugh, loop = true)
                     }
                 }
                 MonsterAnimation.Die -> {
@@ -183,7 +183,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
             changeState(MonsterAnimation.Attack)
             SoundFx.play(sound = Sound.Attack, distance2 = distance2, loop = true)
         }
-        if(SoundFx.lastTimePlayed > 2.5f) {
+        if(SoundFx.lastTimePlayed > RoarRate) {
             SoundFx.play(sound = Sound.Hurt, distance2 = distance2)
         }
     }
@@ -197,7 +197,7 @@ class Monster(arSceneView: ArSceneView, private val painInflicted: MutableFloatS
     }
 
     private fun changeState(newState: MonsterAnimation, loop: Boolean = true) {
-android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
+//android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
         state = newState
         for(i in 0..(arModelNode.animator?.animationCount ?: 0)) {
             arModelNode.stopAnimation(i)
@@ -300,10 +300,13 @@ android.util.Log.e("Monster", "changeState---------------- $newState, $loop")
         private const val IdleDelay = 2
         private const val AnchorDelay = 4
         private const val DieDelay = 4.8f
-        private const val HappyDelay = 7f
+        private const val HappyDelay = 7
 
         private const val DeltaRun = .32f
         private const val DeltaWalk = .25f
+
+        private const val PainRate = 10
+        private const val RoarRate = 2.5f
     }
 }
 
