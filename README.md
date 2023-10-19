@@ -6,6 +6,6 @@ Once the camera in your mobile finds an horizontal plane, you can click over it 
 Then you better run, 'cos this monster is gonna eat you alive...
 
 
-<img src="z3d/example.gif" />
+<img src="z3d/example1.gif" />
 
-![](https://github.com/ccasanoval/CesArDoom2/z3d/example0.gif)
+![](https://github.com/ccasanoval/CesArDoom2/z3d/example1.gif)

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CesArDoom2</string>
+
+    <string name="update_is_mandatory">Esta actualización es necesaria para el correcto funcionamiento de la app</string>
+    <string name="update_is_mandatory2">Es necesario actualizar la aplicación</string>
+    <string name="update_is_mandatory3">Si no actualiza la aplicación no podrá continuar</string>
 </resources>

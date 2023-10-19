@@ -2,6 +2,7 @@ package com.cesoft.cesardoom2
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.PackageInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,18 +29,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +55,14 @@ import io.github.sceneview.ar.node.ArNode
 @Composable
 fun ArScreen() {
     val activity = (LocalContext.current as? Activity)
+
+    // Version
+    val mainActivity = (LocalContext.current as? MainActivity)
+    val packageName = mainActivity!!.packageName
+    val pInfo: PackageInfo = mainActivity.packageManager.getPackageInfo(packageName, 0)
+    val version = pInfo.versionName
+    //val verCode = pInfo.longVersionCode
+
     val configuration = LocalConfiguration.current
     val screenCY = configuration.screenHeightDp.dp
     val screenCX = configuration.screenWidthDp.dp
@@ -82,8 +90,8 @@ fun ArScreen() {
             Column(modifier = Modifier.fillMaxWidth()) {
 
                 // Exit button
-                var x = screenCX - exitSize*3/2
-                var y = -screenCY/2 + exitSize*2
+                var x = screenCX - exitSize*1.25f
+                var y = -screenCY/2 + exitSize*2.5f
                 Icon(
                     painter = painterResource(R.drawable.exit),
                     contentDescription = "Salir",
@@ -96,9 +104,19 @@ fun ArScreen() {
                         }
                 )
 
+                // App version
+                Text(
+                    text = "Ver.$version",
+                    color = Color.White,
+                    modifier = Modifier
+                        .offset(x = x - 75.dp, y = y - exitSize)
+                        .background(Color.Black),
+                    fontSize = 14.sp
+                )
+
                 // Health text
                 x = 5.dp
-                y -= exitSize
+                y -= exitSize*1.5f
                 val health = 100 - pain.floatValue
                 val txt = if(health > 50) "❤ %.0f %%"
                 else if(health > 15) "❤️\u200D\uD83E\uDE79 %.0f %%"
@@ -154,7 +172,7 @@ fun ArScreen() {
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .padding(0.dp)
-                        .width(screenCX-50.dp)
+                        .width(screenCX - 50.dp)
                         .offset(x = 70.dp, y = 16.dp)
                         .clickable {
                             shot.value = true
@@ -192,7 +210,7 @@ fun ArScene(
             //TODO: Depth & light
             arSceneView.lightEstimationMode = LightEstimationMode.ENVIRONMENTAL_HDR
             //arSceneView.lightEstimationMode = LightEstimationMode.AMBIENT_INTENSITY
-            arSceneView.lightEstimator?.cubeMapBuffer?.clear()
+            arSceneView.lightEstimator?.cubeMapBuffer = null
 
             //arSceneView.planeRenderer.isShadowReceiver = true
             //arSceneView.isDepthOcclusionEnabled = true
